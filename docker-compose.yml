@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/childcare
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
+      - NOTIFICATION_EMAILS=${NOTIFICATION_EMAILS}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_REDIRECT_URI=https://childcare.marti88.com/auth/callback
+    volumes:
+      - ./signatures:/app/signatures
+    networks:
+      - childcare-net
+
+  frontend:
+    build: ./frontend
+    networks:
+      - childcare-net
+
+  mongo:
+    image: mongo:6.0
+    volumes:
+      - childcare_data:/data/db
+    networks:
+      - childcare-net
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./certs:/etc/nginx/certs
+    networks:
+      - childcare-net
+
+networks:
+  childcare-net:
+
+volumes:
+  childcare_data:
